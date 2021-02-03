@@ -88,6 +88,7 @@ abstract class AbstractFileTrackImporter extends DefaultHandler implements Track
     protected String uuid;
     protected String gain;
     protected String loss;
+    protected String distance;
 
     // The current track data
     private TrackData trackData;
@@ -134,9 +135,6 @@ abstract class AbstractFileTrackImporter extends DefaultHandler implements Track
         }
     }
 
-    /**
-     * On file end.
-     */
     protected void onFileEnd() {
         // Add markers to the last imported track
         int size = trackIds.size();
@@ -491,6 +489,13 @@ abstract class AbstractFileTrackImporter extends DefaultHandler implements Track
                 trackPoint.setElevationLoss(Float.parseFloat(loss));
             } catch (Exception e) {
                 throw new SAXException(createErrorMessage(String.format(Locale.US, "Unable to parse elevation loss: %s", loss)), e);
+            }
+        }
+        if (distance != null) {
+            try {
+                trackPoint.setDistance(Float.parseFloat(distance));
+            } catch (Exception e) {
+                throw new SAXException(createErrorMessage(String.format(Locale.US, "Unable to parse distance: %s", distance)), e);
             }
         }
 

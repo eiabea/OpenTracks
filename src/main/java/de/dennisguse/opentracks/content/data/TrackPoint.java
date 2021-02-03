@@ -51,6 +51,7 @@ public class TrackPoint {
     private Double altitude_m;
     private Float speed_mps;
     private Float bearing;
+    private Float distance_m;
 
     public enum Type {
         SEGMENT_START_MANUAL(-2), //Start of a segment due to user interaction (start, resume)
@@ -307,6 +308,18 @@ public class TrackPoint {
     }
 
     // Sensor data
+    public boolean hasDistance() {
+        return distance_m != null;
+    }
+
+    public Float getDistance() {
+        return distance_m;
+    }
+
+    public void setDistance(Float distance_m) {
+        this.distance_m = distance_m;
+    }
+
     public boolean hasSensorData() {
         return hasHeartRate() || hasCyclingCadence() || hasPower();
     }

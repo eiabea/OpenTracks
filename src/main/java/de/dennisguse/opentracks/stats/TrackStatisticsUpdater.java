@@ -160,7 +160,7 @@ public class TrackStatisticsUpdater {
             return;
         }
 
-        double movingDistance = lastMovingTrackPoint.distanceTo(trackPoint);
+        double movingDistance = trackPoint.hasDistance() ? trackPoint.getDistance() : lastMovingTrackPoint.distanceTo(trackPoint);
         if (movingDistance < minRecordingDistance && !TrackPointUtils.isMoving(trackPoint)) {
             speedBuffer_ms.reset();
             lastTrackPoint = trackPoint;

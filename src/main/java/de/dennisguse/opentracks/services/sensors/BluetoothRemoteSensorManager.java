@@ -59,7 +59,7 @@ public class BluetoothRemoteSensorManager implements BluetoothConnectionManager.
 
     private final BluetoothConnectionManager.HeartRate heartRate = new BluetoothConnectionManager.HeartRate(this);
     private final BluetoothConnectionManager.CyclingCadence cyclingCadence = new BluetoothConnectionManager.CyclingCadence(this);
-    private final BluetoothConnectionManager.CyclingSpeed cyclingSpeed = new BluetoothConnectionManager.CyclingSpeed(this);
+    private final BluetoothConnectionManager.CyclingDistanceSpeed cyclingSpeed = new BluetoothConnectionManager.CyclingDistanceSpeed(this);
     private final BluetoothConnectionManager.CyclingPower cyclingPower = new BluetoothConnectionManager.CyclingPower(this);
 
     private final SensorDataSet sensorDataSet = new SensorDataSet();
@@ -167,15 +167,17 @@ public class BluetoothRemoteSensorManager implements BluetoothConnectionManager.
             }
             ((SensorDataCycling.Cadence) sensorData).compute(previous);
         }
-        if (sensorData instanceof SensorDataCycling.Speed) {
-            SensorDataCycling.Speed previous = sensorDataSet.getCyclingSpeed();
+        if (sensorData instanceof SensorDataCycling.DistanceSpeed) {
+            SensorDataCycling.DistanceSpeed previous = sensorDataSet.getCyclingSpeed();
             Log.d(TAG, "previous " + previous + "; current" + sensorData);
             if (sensorData.equals(previous)) {
                 Log.d(TAG, "onChanged: speed data repeated.");
                 return;
             }
-            ((SensorDataCycling.Speed) sensorData).compute(previous, PreferencesUtils.getWheelCircumference(context));
+            ((SensorDataCycling.DistanceSpeed) sensorData).compute(previous, PreferencesUtils.getWheelCircumference(context));
         }
+
+        //TODO Figure out how to keep the whole distance after previous trackpoint; speed is only the difference between the most recent and the previous measurement.
 
         sensorDataSet.set(sensorData);
     }

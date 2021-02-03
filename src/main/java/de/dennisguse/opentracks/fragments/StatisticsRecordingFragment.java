@@ -332,10 +332,10 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
 
     private void setSpeedSensorData(SensorDataSet sensorDataSet) {
         if (sensorDataSet != null && sensorDataSet.getCyclingSpeed() != null) {
-            SensorDataCycling.Speed data = sensorDataSet.getCyclingSpeed();
+            SensorDataCycling.DistanceSpeed data = sensorDataSet.getCyclingSpeed();
 
             if (data.hasValue() && data.isRecent()) {
-                setSpeed(data.getValue());
+                setSpeed(data.getValue().second);
             }
         }
     }

@@ -10,7 +10,7 @@ public final class SensorDataSet {
 
     private SensorDataCycling.Cadence cyclingCadence;
 
-    private SensorDataCycling.Speed cyclingSpeed;
+    private SensorDataCycling.DistanceSpeed cyclingSpeed;
 
     private SensorDataCyclingPower cyclingPower;
 
@@ -25,7 +25,7 @@ public final class SensorDataSet {
         return cyclingCadence;
     }
 
-    public SensorDataCycling.Speed getCyclingSpeed() {
+    public SensorDataCycling.DistanceSpeed getCyclingSpeed() {
         return cyclingSpeed;
     }
 
@@ -58,7 +58,8 @@ public final class SensorDataSet {
         }
 
         if (cyclingSpeed != null && cyclingSpeed.hasValue()) {
-            trackPoint.setSpeed(cyclingSpeed.getValue());
+            trackPoint.setDistance(cyclingSpeed.getValue().first);
+            trackPoint.setSpeed(cyclingSpeed.getValue().second);
         }
 
         if (cyclingPower != null && cyclingPower.hasValue()) {
@@ -85,8 +86,8 @@ public final class SensorDataSet {
             this.cyclingCadence = (SensorDataCycling.Cadence) data;
             return;
         }
-        if (type instanceof SensorDataCycling.Speed) {
-            this.cyclingSpeed = (SensorDataCycling.Speed) data;
+        if (type instanceof SensorDataCycling.DistanceSpeed) {
+            this.cyclingSpeed = (SensorDataCycling.DistanceSpeed) data;
             return;
         }
 

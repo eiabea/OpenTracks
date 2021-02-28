@@ -21,6 +21,8 @@ import android.database.sqlite.SQLiteConstraintException;
 import android.net.Uri;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
+
 import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -118,10 +120,11 @@ abstract class AbstractFileTrackImporter extends DefaultHandler implements Track
     }
 
     @Override
-    public Track.Id importFile(InputStream inputStream) {
+    @NonNull
+    public List<Track.Id> importFile(InputStream inputStream) {
         try {
             SAXParserFactory.newInstance().newSAXParser().parse(inputStream, this);
-            return trackIds.get(0);
+            return trackIds;
         } catch (IOException | SAXException | ParserConfigurationException e) {
             Log.e(TAG, "Unable to import file", e);
             if (trackIds.size() > 0) {

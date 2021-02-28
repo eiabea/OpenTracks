@@ -91,15 +91,16 @@ public class GPXTrackExporter implements TrackExporter {
 
     @Override
     public boolean writeTrack(Track[] tracks, @NonNull OutputStream outputStream) {
-        Track mainTrack = tracks[0];
         try {
             prepare(outputStream);
-            writeHeader(mainTrack);
-
-            writeMarkers(mainTrack);
+            writeHeader();
 
             for (Track track : tracks) {
-                writeLocations(track);
+                writeMarkers(track);
+            }
+
+            for (Track track : tracks) {
+                writeTrackPoints(track);
             }
 
             writeFooter();
@@ -112,7 +113,7 @@ public class GPXTrackExporter implements TrackExporter {
         }
     }
 
-    private void writeLocations(Track track) throws InterruptedException {
+    private void writeTrackPoints(Track track) throws InterruptedException {
         boolean wroteTrack = false;
         boolean wroteSegment = false;
 
@@ -123,7 +124,7 @@ public class GPXTrackExporter implements TrackExporter {
                 TrackPoint trackPoint = trackPointIterator.next();
 
                 if (!wroteTrack) {
-                    writeBeginTrack(track, trackPoint);
+                    writeBeginTrack(track);
                     wroteTrack = true;
                 }
 
@@ -163,12 +164,11 @@ public class GPXTrackExporter implements TrackExporter {
             }
 
             if (wroteTrack) {
-                TrackPoint lastValidTrackPoint = contentProviderUtils.getLastValidTrackPoint(track.getId());
-                writeEndTrack(track, lastValidTrackPoint);
+                writeEndTrack();
             } else {
                 // Write an empty track
-                writeBeginTrack(track, null);
-                writeEndTrack(track, null);
+                writeBeginTrack(track);
+                writeEndTrack();
             }
         }
     }
@@ -185,7 +185,7 @@ public class GPXTrackExporter implements TrackExporter {
     }
 
 
-    public void writeHeader(Track track) {
+    public void writeHeader() {
         if (printWriter != null) {
             printWriter.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
             printWriter.println("<gpx");
@@ -202,12 +202,6 @@ public class GPXTrackExporter implements TrackExporter {
                     + " http://www.topografix.com/GPX/Private/TopoGrafix/0/1 http://www.topografix.com/GPX/Private/TopoGrafix/0/1/topografix.xsd"
                     + " http://www.garmin.com/xmlschemas/TrackPointExtension/v2 https://www8.garmin.com/xmlschemas/TrackPointExtensionv2.xsd"
                     + " http://opentracksapp.com/xmlschemas/v1 http://opentracksapp.com/xmlschemas/OpenTracks_v1.xsd\">");
-
-            printWriter.println("<metadata>");
-
-            printWriter.println("<name>" + StringUtils.formatCData(track.getName()) + "</name>");
-            printWriter.println("<desc>" + StringUtils.formatCData(track.getDescription()) + "</desc>");
-            printWriter.println("</metadata>");
         }
     }
 
@@ -247,7 +241,7 @@ public class GPXTrackExporter implements TrackExporter {
         }
     }
 
-    public void writeBeginTrack(Track track, TrackPoint startTrackPoint) {
+    public void writeBeginTrack(Track track) {
         if (printWriter != null) {
             printWriter.println("<trk>");
             printWriter.println("<name>" + StringUtils.formatCData(track.getName()) + "</name>");
@@ -261,7 +255,7 @@ public class GPXTrackExporter implements TrackExporter {
         }
     }
 
-    public void writeEndTrack(Track track, TrackPoint endTrackPoint) {
+    public void writeEndTrack() {
         if (printWriter != null) {
             printWriter.println("</trk>");
         }

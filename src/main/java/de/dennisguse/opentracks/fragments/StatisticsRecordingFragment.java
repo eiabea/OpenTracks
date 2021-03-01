@@ -49,6 +49,7 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
     private static final String TAG = StatisticsRecordingFragment.class.getSimpleName();
 
     private static final long UI_UPDATE_INTERVAL = UnitConversions.ONE_SECOND_MS;
+    private SharedPreferences sharedPreferences;
 
     public static Fragment newInstance() {
         return new StatisticsRecordingFragment();
@@ -76,22 +77,22 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
     private final SharedPreferences.OnSharedPreferenceChangeListener sharedPreferenceChangeListener = (sharedPreferences, key) -> {
         boolean updateUInecessary = false;
 
-        if (key == null || PreferencesUtils.isKey(getContext(), R.string.stats_units_key, key)) {
+        if (PreferencesUtils.isKey(getContext(), R.string.stats_units_key, key)) {
             updateUInecessary = true;
             preferenceMetricUnits = PreferencesUtils.isMetricUnits(sharedPreferences, getContext());
         }
 
-        if (key == null || PreferencesUtils.isKey(getContext(), R.string.stats_rate_key, key)) {
+        if (PreferencesUtils.isKey(getContext(), R.string.stats_rate_key, key)) {
             updateUInecessary = true;
             preferenceReportSpeed = PreferencesUtils.isReportSpeed(sharedPreferences, getContext(), category);
         }
 
-        if (key == null || PreferencesUtils.isKey(getContext(), R.string.stats_show_grade_elevation_key, key)) {
+        if (PreferencesUtils.isKey(getContext(), R.string.stats_show_grade_elevation_key, key)) {
             updateUInecessary = true;
             preferenceShowElevation = PreferencesUtils.isShowStatsElevation(sharedPreferences, getContext());
         }
 
-        if (key == null || PreferencesUtils.isKey(getContext(), R.string.stats_show_coordinate_key, key)) {
+        if (PreferencesUtils.isKey(getContext(), R.string.stats_show_coordinate_key, key)) {
             updateUInecessary = true;
             preferenceShowCoordinate = PreferencesUtils.isStatsShowCoordinate(sharedPreferences, getContext());
         }
@@ -130,6 +131,7 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
 
         handlerUpdateUI = new Handler();
 
+        sharedPreferences = PreferencesUtils.getSharedPreferences(getContext());
 
         viewBinding.statsActivityTypeIcon.setOnClickListener(v -> ((TrackRecordingActivity) getActivity()).chooseActivityType(category));
 
@@ -143,8 +145,10 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
     public void onResume() {
         super.onResume();
         resumeTrackDataHub();
-        SharedPreferences preferences = PreferencesUtils.register(getContext(), sharedPreferenceChangeListener);
-        sharedPreferenceChangeListener.onSharedPreferenceChanged(preferences, null);
+
+        sharedPreferences.registerOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
+        sharedPreferenceChangeListener.onSharedPreferenceChanged(sharedPreferences, null);
+
         trackRecordingServiceConnection.startConnection(getContext());
 
         updateUIeachSecond.run();
@@ -155,7 +159,8 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
     public void onPause() {
         super.onPause();
         pauseTrackDataHub();
-        PreferencesUtils.unregister(getContext(), sharedPreferenceChangeListener);
+
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(sharedPreferenceChangeListener);
 
         handlerUpdateUI.removeCallbacks(updateUIeachSecond);
     }
@@ -176,6 +181,7 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
     public void onDestroy() {
         super.onDestroy();
         trackRecordingServiceConnection = null;
+        sharedPreferences = null;
     }
 
     @Override
@@ -184,7 +190,11 @@ public class StatisticsRecordingFragment extends Fragment implements TrackDataLi
             getActivity().runOnUiThread(() -> {
                 if (isResumed()) {
                     lastTrackStatistics = track != null ? track.getTrackStatistics() : null;
-                    category = track != null ? track.getCategory() : "";
+                    String newCategory = track != null ? track.getCategory() : "";
+                    if (!category.equals(newCategory)) {
+                        category = newCategory;
+                        sharedPreferenceChangeListener.onSharedPreferenceChanged(sharedPreferences, getString(R.string.stats_rate_key));
+                    }
                     updateUI();
                 }
             });
